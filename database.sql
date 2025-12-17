@@ -35,6 +35,21 @@ CREATE TABLE IF NOT EXISTS help_requests (
     INDEX idx_category (category)
 );
 
+-- Chat Messages Table
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    request_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    sender_role ENUM('Resident', 'Helper') NOT NULL,
+    message_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (request_id) REFERENCES help_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_request_id (request_id),
+    INDEX idx_sender_id (sender_id),
+    INDEX idx_created_at (created_at)
+);
+
 -- Sample Data (Optional - for testing)
 -- INSERT INTO users (name, contact_info, location, password, role) VALUES
 -- ('John Doe', 'john@example.com', '123 Main St', '$2b$10$hashedpassword', 'Resident'),
