@@ -23,8 +23,12 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
     "mysql2": "^3.6.5",
     "socket.io": "^4.8.1"
+=======
+    "mysql2": "^3.6.5"
+>>>>>>> admin-dashboard-feature
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -34,6 +38,10 @@
     "@types/node": "^20.10.5",
     "nodemon": "^3.0.2",
     "ts-node": "^10.9.2",
+<<<<<<< HEAD
+=======
+    "ts-node-dev": "^2.0.0",
+>>>>>>> admin-dashboard-feature
     "typescript": "^5.3.3"
   }
 }

@@ -4,7 +4,7 @@ export interface User {
   contact_info: string;
   location: string;
   password: string;
-  role: 'Resident' | 'Helper';
+  role: 'Resident' | 'Helper' | 'Admin';
   created_at?: Date;
 }
 
@@ -24,7 +24,7 @@ export interface HelpRequest {
 export interface AuthRequest {
   contact_info: string;
   password: string;
-  role: 'Resident' | 'Helper';
+  role: 'Resident' | 'Helper' | 'Admin';
 }
 
 export interface RegisterRequest extends User {

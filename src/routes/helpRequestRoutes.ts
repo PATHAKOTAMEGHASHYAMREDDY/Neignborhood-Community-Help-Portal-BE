@@ -5,14 +5,18 @@ import {
   getAvailableRequests,
   getMyRequests,
   acceptHelpRequest,
-  updateRequestStatus
+  startRequest,
+  completeRequest
 } from '../controllers/helpRequestController';
+
 import { authenticateToken, authorizeRole } from '../middleware/auth';
 import { validateHelpRequest } from '../middleware/validation';
 
 const router = express.Router();
 
-// Create help request (Resident only)
+/**
+ * Create help request (Resident only)
+ */
 router.post(
   '/',
   authenticateToken,
@@ -21,19 +25,65 @@ router.post(
   createHelpRequest
 );
 
-// Get all help requests (Admin or authenticated users)
-router.get('/', authenticateToken, getAllHelpRequests);
+/**
+ * Get all help requests (Admin / Resident / Helper)
+ */
+router.get(
+  '/',
+  authenticateToken,
+  getAllHelpRequests
+);
 
-// Get available requests (Helper)
-router.get('/available', authenticateToken, authorizeRole('Helper'), getAvailableRequests);
+/**
+ * Get available requests (Helper only)
+ */
+router.get(
+  '/available',
+  authenticateToken,
+  authorizeRole('Helper'),
+  getAvailableRequests
+);
 
-// Get my requests (Resident or Helper)
-router.get('/my-requests', authenticateToken, getMyRequests);
+/**
+ * Get my requests (Resident or Helper)
+ */
+router.get(
+  '/my-requests',
+  authenticateToken,
+  getMyRequests
+);
 
-// Accept help request (Helper only)
-router.put('/:id/accept', authenticateToken, authorizeRole('Helper'), acceptHelpRequest);
+/**
+ * Helper accepts a request
+ * Status: Pending → Accepted
+ */
+router.put(
+  '/:id/accept',
+  authenticateToken,
+  authorizeRole('Helper'),
+  acceptHelpRequest
+);
 
-// Update request status
-router.put('/:id/status', authenticateToken, updateRequestStatus);
+/**
+ * Helper starts working
+ * Status: Accepted → In-progress
+ */
+router.put(
+  '/:id/start',
+  authenticateToken,
+  authorizeRole('Helper'),
+  startRequest
+);
+
+/**
+ * Helper completes work
+ * Status: In-progress → Completed
+ */
+router.put(
+  '/:id/complete',
+  authenticateToken,
+  authorizeRole('Helper'),
+  completeRequest
+);
 
 export default router;

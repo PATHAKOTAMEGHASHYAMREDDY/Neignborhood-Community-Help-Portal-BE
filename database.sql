@@ -54,3 +54,11 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 -- INSERT INTO users (name, contact_info, location, password, role) VALUES
 -- ('John Doe', 'john@example.com', '123 Main St', '$2b$10$hashedpassword', 'Resident'),
 -- ('Jane Smith', 'jane@example.com', '456 Oak Ave', '$2b$10$hashedpassword', 'Helper');
+
+--Admin side
+
+ALTER TABLE users 
+MODIFY role ENUM('Resident', 'Helper', 'Admin');
+
+INSERT INTO users (name, contact_info, location, role, password)
+VALUES ('Admin', 'admin@portal.com', 'System', 'Admin', 'admin123');

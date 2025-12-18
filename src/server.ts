@@ -6,8 +6,13 @@ import { Server } from 'socket.io';
 import { testConnection } from './config/database';
 import authRoutes from './routes/authRoutes';
 import helpRequestRoutes from './routes/helpRequestRoutes';
+<<<<<<< HEAD
 import chatRoutes from './routes/chatRoutes';
 import { setupSocketHandlers } from './socket/chatSocket';
+=======
+import adminRoutes from './routes/adminRoutes';
+
+>>>>>>> admin-dashboard-feature
 
 dotenv.config();
 
@@ -27,6 +32,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/admin', adminRoutes);
+
 
 // Routes
 app.use('/api/auth', authRoutes);
