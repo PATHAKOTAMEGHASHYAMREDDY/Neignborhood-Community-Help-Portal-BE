@@ -58,13 +58,9 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * LOGIN USER
- * Role is determined ONLY from database
- */
 export const login = async (req: Request, res: Response) => {
   try {
-    const { contact_info, password }: AuthRequest = req.body;
+    const { contact_info, password, role }: AuthRequest = req.body;
 
     // Find user
     const [users] = await pool.query(
@@ -84,7 +80,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Generate JWT token using ROLE FROM DATABASE
+    // Verify role matches
+    if (user.role !== role) {
+      return res.status(403).json({ error: 'Selected role does not match your registered role' });
+    }
+
+    // Generate JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'secret'
