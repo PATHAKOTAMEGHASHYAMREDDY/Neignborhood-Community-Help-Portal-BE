@@ -27,7 +27,18 @@ export const getChatMessages = async (req: AuthenticatedRequest, res: Response) 
       [requestId]
     );
 
-    res.json({ messages });
+    // Format messages to match frontend interface
+    const formattedMessages = Array.isArray(messages) ? messages.map((msg: any) => ({
+      id: msg.id,
+      requestId: msg.request_id,
+      senderId: msg.sender_id,
+      senderRole: msg.sender_role,
+      messageText: msg.message_text,
+      timestamp: msg.created_at,
+      senderName: msg.sender_name
+    })) : [];
+
+    res.json({ messages: formattedMessages });
   } catch (error) {
     console.error('Get chat messages error:', error);
     res.status(500).json({ error: 'Internal server error' });
