@@ -102,3 +102,81 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const updateProfile = async (req: any, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { name, contact_info, location } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if new contact_info is already taken by another user
+    if (contact_info) {
+      const [existingUsers] = await pool.query(
+        'SELECT * FROM users WHERE contact_info = ? AND id != ?',
+        [contact_info, userId]
+      );
+
+      if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+        return res.status(400).json({ error: 'Contact info already in use by another user' });
+      }
+    }
+
+    // Build update query dynamically
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (name) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (contact_info) {
+      updates.push('contact_info = ?');
+      values.push(contact_info);
+    }
+    if (location) {
+      updates.push('location = ?');
+      values.push(location);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    values.push(userId);
+
+    // Update user
+    await pool.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+      values
+    );
+
+    // Get updated user
+    const [users] = await pool.query(
+      'SELECT id, name, contact_info, location, role FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const updatedUser = users[0] as any;
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        contact_info: updatedUser.contact_info,
+        location: updatedUser.location,
+        role: updatedUser.role
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
