@@ -6,13 +6,10 @@ import { Server } from 'socket.io';
 import { testConnection } from './config/database';
 import authRoutes from './routes/authRoutes';
 import helpRequestRoutes from './routes/helpRequestRoutes';
-<<<<<<< HEAD
 import chatRoutes from './routes/chatRoutes';
 import { setupSocketHandlers } from './socket/chatSocket';
-=======
 import adminRoutes from './routes/adminRoutes';
 
->>>>>>> admin-dashboard-feature
 
 dotenv.config();
 
