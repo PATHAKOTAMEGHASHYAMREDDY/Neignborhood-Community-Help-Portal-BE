@@ -103,8 +103,9 @@ export const acceptHelpRequest = async (req: AuthenticatedRequest, res: Response
     // Check if request exists and is pending
     const [requests] = await pool.query(
       'SELECT * FROM help_requests WHERE id = ? AND status = ?',
-      [id, 'Pending']
+      [id, 'Approved']
     );
+
 
     if (!Array.isArray(requests) || requests.length === 0) {
       return res.status(404).json({ error: 'Request not found or already accepted' });
@@ -120,6 +121,35 @@ export const acceptHelpRequest = async (req: AuthenticatedRequest, res: Response
   } catch (error) {
     console.error('Accept help request error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+export const startRequest = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query(
+      'UPDATE help_requests SET status = ? WHERE id = ? AND status = ?',
+      ['In-progress', id, 'Accepted']
+    );
+
+    res.json({ message: 'Request marked as In-progress' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to start request' });
+  }
+};
+
+export const completeRequest = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query(
+      'UPDATE help_requests SET status = ? WHERE id = ? AND status = ?',
+      ['Completed', id, 'In-progress']
+    );
+
+    res.json({ message: 'Request marked as Completed' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to complete request' });
   }
 };
 
@@ -154,4 +184,5 @@ export const updateRequestStatus = async (req: AuthenticatedRequest, res: Respon
     console.error('Update request status error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+  
 };
