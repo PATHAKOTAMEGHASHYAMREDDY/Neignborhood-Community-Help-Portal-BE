@@ -62,7 +62,27 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { contact_info, password, role }: AuthRequest = req.body;
 
-    // Find user
+    // HARDCODED ADMIN LOGIN
+    if (role === 'Admin' && contact_info === 'admin@portal.com' && password === 'Admin@123') {
+      const token = jwt.sign(
+        { id: 999, role: 'Admin' },
+        process.env.JWT_SECRET || 'secret'
+      );
+
+      return res.json({
+        message: 'Admin login successful',
+        token,
+        user: {
+          id: 999,
+          name: 'Admin',
+          contact_info: 'admin@portal.com',
+          location: 'System',
+          role: 'Admin'
+        }
+      });
+    }
+
+    // Find user in database
     const [users] = await pool.query(
       'SELECT * FROM users WHERE contact_info = ?',
       [contact_info]

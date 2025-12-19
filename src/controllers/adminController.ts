@@ -1,91 +1,136 @@
 import { Response } from 'express';
 import pool from '../config/database';
-import { AuthenticatedRequest } from '../middleware/auth';
 
 /**
- * Get all pending help requests (Admin only)
+ * GET ALL USERS (Residents and Helpers)
  */
-export const getPendingRequests = async (
-  _req: AuthenticatedRequest,
-  res: Response
-) => {
+export const getAllUsers = async (req: any, res: Response) => {
   try {
-    const [requests] = await pool.query(`
-      SELECT 
-        hr.*, 
-        u.name AS resident_name, 
-        u.location AS resident_location
-      FROM help_requests hr
-      JOIN users u ON hr.resident_id = u.id
-      WHERE hr.status = 'Pending'
-      ORDER BY hr.created_at DESC
-    `);
+    const [users] = await pool.query(
+      `SELECT id, name, contact_info, location, role, created_at 
+       FROM users 
+       WHERE role IN ('Resident', 'Helper')
+       ORDER BY created_at DESC`
+    );
 
-    res.json({ requests });
+    res.json({
+      success: true,
+      users: users
+    });
   } catch (error) {
-    console.error('Get pending requests error:', error);
+    console.error('Get all users error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 /**
- * Approve help request (Admin only)
- * Status change: Pending → Accepted
+ * GET USER STATISTICS
  */
-export const approveHelpRequest = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const getUserStats = async (req: any, res: Response) => {
   try {
-    const { id } = req.params;
-
-    const [result] = await pool.query(
-      'UPDATE help_requests SET status = ? WHERE id = ? AND status = ?',
-      ['Accepted', id, 'Pending']
+    const [stats] = await pool.query(
+      `SELECT 
+        COUNT(*) as total_users,
+        SUM(CASE WHEN role = 'Resident' THEN 1 ELSE 0 END) as total_residents,
+        SUM(CASE WHEN role = 'Helper' THEN 1 ELSE 0 END) as total_helpers
+       FROM users 
+       WHERE role IN ('Resident', 'Helper')`
     );
 
-    const updateResult = result as any;
-
-    if (updateResult.affectedRows === 0) {
-      return res.status(400).json({
-        error: 'Request not found or already processed'
-      });
-    }
-
-    res.json({ message: 'Help request accepted successfully' });
+    res.json({
+      success: true,
+      stats: Array.isArray(stats) && stats.length > 0 ? stats[0] : {
+        total_users: 0,
+        total_residents: 0,
+        total_helpers: 0
+      }
+    });
   } catch (error) {
-    console.error('Approve request error:', error);
+    console.error('Get user stats error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 /**
- * Reject help request (Admin only)
- * Status change: Pending → Rejected
+ * GET REQUEST STATISTICS
  */
-export const rejectHelpRequest = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const getRequestStats = async (req: any, res: Response) => {
   try {
-    const { id } = req.params;
-
-    const [result] = await pool.query(
-      'UPDATE help_requests SET status = ? WHERE id = ? AND status = ?',
-      ['Rejected', id, 'Pending']
+    const [stats] = await pool.query(
+      `SELECT 
+        COUNT(*) as total_requests,
+        SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'Accepted' THEN 1 ELSE 0 END) as accepted,
+        SUM(CASE WHEN status = 'In-progress' THEN 1 ELSE 0 END) as in_progress,
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed
+       FROM help_requests`
     );
 
-    const updateResult = result as any;
-
-    if (updateResult.affectedRows === 0) {
-      return res.status(400).json({
-        error: 'Request not found or already processed'
-      });
-    }
-
-    res.json({ message: 'Help request rejected successfully' });
+    res.json({
+      success: true,
+      stats: Array.isArray(stats) && stats.length > 0 ? stats[0] : {
+        total_requests: 0,
+        pending: 0,
+        accepted: 0,
+        in_progress: 0,
+        completed: 0
+      }
+    });
   } catch (error) {
-    console.error('Reject request error:', error);
+    console.error('Get request stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET ANALYTICS DATA
+ */
+export const getAnalytics = async (req: any, res: Response) => {
+  try {
+    // Category distribution
+    const [categoryStats] = await pool.query(
+      `SELECT category, COUNT(*) as count 
+       FROM help_requests 
+       GROUP BY category 
+       ORDER BY count DESC`
+    );
+
+    // Requests per day (last 7 days)
+    const [dailyStats] = await pool.query(
+      `SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as count
+       FROM help_requests
+       WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+       GROUP BY DATE(created_at)
+       ORDER BY date ASC`
+    );
+
+    // Helper performance
+    const [helperStats] = await pool.query(
+      `SELECT 
+        u.name as helper_name,
+        COUNT(hr.id) as total_tasks,
+        SUM(CASE WHEN hr.status = 'Completed' THEN 1 ELSE 0 END) as completed_tasks
+       FROM users u
+       LEFT JOIN help_requests hr ON u.id = hr.helper_id
+       WHERE u.role = 'Helper'
+       GROUP BY u.id, u.name
+       HAVING total_tasks > 0
+       ORDER BY completed_tasks DESC
+       LIMIT 10`
+    );
+
+    res.json({
+      success: true,
+      analytics: {
+        categoryDistribution: categoryStats,
+        dailyRequests: dailyStats,
+        topHelpers: helperStats
+      }
+    });
+  } catch (error) {
+    console.error('Get analytics error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -1,35 +1,22 @@
 import express from 'express';
-import {
-  approveHelpRequest,
-  rejectHelpRequest,
-  getPendingRequests
-} from '../controllers/adminController';
-import { authenticateToken, authorizeRole } from '../middleware/auth';
+import { getAllUsers, getUserStats, getRequestStats, getAnalytics } from '../controllers/adminController';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// Get all pending help requests (Admin only)
-router.get(
-  '/requests/pending',
-  authenticateToken,
-  authorizeRole('Admin'),
-  getPendingRequests
-);
+// All admin routes require authentication
+router.use(authenticateToken);
 
-// Approve help request (Admin only)
-router.put(
-  '/requests/:id/approve',
-  authenticateToken,
-  authorizeRole('Admin'),
-  approveHelpRequest
-);
+// Get all users
+router.get('/users', getAllUsers);
 
-// Reject help request (Admin only)
-router.put(
-  '/requests/:id/reject',
-  authenticateToken,
-  authorizeRole('Admin'),
-  rejectHelpRequest
-);
+// Get user statistics
+router.get('/stats/users', getUserStats);
+
+// Get request statistics
+router.get('/stats/requests', getRequestStats);
+
+// Get analytics data
+router.get('/analytics', getAnalytics);
 
 export default router;
