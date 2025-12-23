@@ -6,7 +6,8 @@ import {
   getMyRequests,
   acceptHelpRequest,
   startRequest,
-  completeRequest
+  completeRequest,
+  updateRequestStatus
 } from '../controllers/helpRequestController';
 
 import { authenticateToken, authorizeRole } from '../middleware/auth';
@@ -84,6 +85,16 @@ router.put(
   authenticateToken,
   authorizeRole('Helper'),
   completeRequest
+);
+
+/**
+ * Update request status (generic endpoint)
+ * Used by helpers to update status
+ */
+router.put(
+  '/:id/status',
+  authenticateToken,
+  updateRequestStatus
 );
 
 export default router;

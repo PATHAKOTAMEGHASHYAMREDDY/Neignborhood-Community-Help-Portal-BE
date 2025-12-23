@@ -103,9 +103,8 @@ export const acceptHelpRequest = async (req: AuthenticatedRequest, res: Response
     // Check if request exists and is pending
     const [requests] = await pool.query(
       'SELECT * FROM help_requests WHERE id = ? AND status = ?',
-      [id, 'Approved']
+      [id, 'Pending']
     );
-
 
     if (!Array.isArray(requests) || requests.length === 0) {
       return res.status(404).json({ error: 'Request not found or already accepted' });
