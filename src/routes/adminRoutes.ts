@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUsers, getUserStats, getRequestStats, getAnalytics } from '../controllers/adminController';
+import { getAllUsers, getUserStats, getRequestStats, getAnalytics, blockUser, unblockUser } from '../controllers/adminController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -18,5 +18,11 @@ router.get('/stats/requests', getRequestStats);
 
 // Get analytics data
 router.get('/analytics', getAnalytics);
+
+// Block user
+router.put('/users/:userId/block', blockUser);
+
+// Unblock user
+router.put('/users/:userId/unblock', unblockUser);
 
 export default router;

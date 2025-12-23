@@ -7,7 +7,7 @@ import pool from '../config/database';
 export const getAllUsers = async (req: any, res: Response) => {
   try {
     const [users] = await pool.query(
-      `SELECT id, name, contact_info, location, role, created_at 
+      `SELECT id, name, contact_info, location, role, is_blocked, created_at 
        FROM users 
        WHERE role IN ('Resident', 'Helper')
        ORDER BY created_at DESC`
@@ -131,6 +131,72 @@ export const getAnalytics = async (req: any, res: Response) => {
     });
   } catch (error) {
     console.error('Get analytics error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * BLOCK USER
+ */
+export const blockUser = async (req: any, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const [users] = await pool.query(
+      'SELECT * FROM users WHERE id = ? AND role IN ("Resident", "Helper")',
+      [userId]
+    );
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Block user
+    await pool.query(
+      'UPDATE users SET is_blocked = TRUE WHERE id = ?',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'User blocked successfully'
+    });
+  } catch (error) {
+    console.error('Block user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * UNBLOCK USER
+ */
+export const unblockUser = async (req: any, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const [users] = await pool.query(
+      'SELECT * FROM users WHERE id = ? AND role IN ("Resident", "Helper")',
+      [userId]
+    );
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Unblock user
+    await pool.query(
+      'UPDATE users SET is_blocked = FALSE WHERE id = ?',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'User unblocked successfully'
+    });
+  } catch (error) {
+    console.error('Unblock user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

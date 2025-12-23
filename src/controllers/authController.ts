@@ -94,6 +94,11 @@ export const login = async (req: Request, res: Response) => {
 
     const user = users[0] as User;
 
+    // Check if user is blocked
+    if ((user as any).is_blocked) {
+      return res.status(403).json({ error: 'Your account has been blocked. Please contact the administrator.' });
+    }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
