@@ -7,8 +7,9 @@ import { testConnection } from './config/database';
 import authRoutes from './routes/authRoutes';
 import helpRequestRoutes from './routes/helpRequestRoutes';
 import chatRoutes from './routes/chatRoutes';
-import { setupSocketHandlers } from './socket/chatSocket';
 import adminRoutes from './routes/adminRoutes';
+import reportRoutes from './routes/reportRoutes';
+import { setupSocketHandlers } from './socket/chatSocket';
 
 
 dotenv.config();
@@ -36,6 +37,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/help-requests', helpRequestRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
