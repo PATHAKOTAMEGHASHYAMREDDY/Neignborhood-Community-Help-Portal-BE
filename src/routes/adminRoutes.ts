@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUsers, getUserStats, getRequestStats, getAnalytics, blockUser, unblockUser } from '../controllers/adminController';
+import { getAllUsers, getUserStats, getRequestStats, getAnalytics, blockUser, unblockUser, getReportsData } from '../controllers/adminController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -24,5 +24,8 @@ router.put('/users/:userId/block', blockUser);
 
 // Unblock user
 router.put('/users/:userId/unblock', unblockUser);
+
+// Get reports data for download
+router.get('/reports/download', getReportsData);
 
 export default router;
