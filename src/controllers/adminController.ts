@@ -200,3 +200,47 @@ export const unblockUser = async (req: any, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * GET REPORTS DATA FOR DOWNLOAD
+ */
+export const getReportsData = async (req: any, res: Response) => {
+  try {
+    const { reportType } = req.query;
+
+    let query = `
+      SELECT 
+        hr.id,
+        hr.title,
+        hr.description,
+        hr.category,
+        hr.status,
+        hr.created_at,
+        u1.name as resident_name,
+        u2.name as helper_name
+      FROM help_requests hr
+      LEFT JOIN users u1 ON hr.resident_id = u1.id
+      LEFT JOIN users u2 ON hr.helper_id = u2.id
+      WHERE 1=1
+    `;
+
+    if (reportType === 'daily') {
+      query += ` AND DATE(hr.created_at) = CURDATE()`;
+    } else if (reportType === 'weekly') {
+      query += ` AND hr.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    }
+
+    query += ` ORDER BY hr.created_at DESC`;
+
+    const [reports] = await pool.query(query);
+
+    res.json({
+      success: true,
+      data: reports,
+      reportType: reportType
+    });
+  } catch (error) {
+    console.error('Get reports data error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
