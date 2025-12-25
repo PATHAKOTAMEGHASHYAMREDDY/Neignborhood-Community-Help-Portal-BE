@@ -9,6 +9,7 @@ import helpRequestRoutes from './routes/helpRequestRoutes';
 import chatRoutes from './routes/chatRoutes';
 import adminRoutes from './routes/adminRoutes';
 import reportRoutes from './routes/reportRoutes';
+import passwordResetRoutes from './routes/passwordResetRoutes';
 import { setupSocketHandlers } from './socket/chatSocket';
 
 
@@ -39,6 +40,7 @@ app.use('/api/help-requests', helpRequestRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
