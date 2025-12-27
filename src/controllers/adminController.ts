@@ -244,3 +244,46 @@ export const getReportsData = async (req: any, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * GET ALL USER REPORTS
+ */
+export const getAllUserReports = async (req: any, res: Response) => {
+  try {
+    const { timeFilter } = req.query;
+
+    let query = `
+      SELECT 
+        ur.id,
+        ur.issue_type,
+        ur.description,
+        ur.status,
+        ur.admin_notes,
+        ur.created_at,
+        u1.name as reporter_name,
+        u2.name as reported_user_name
+      FROM user_reports ur
+      LEFT JOIN users u1 ON ur.reporter_id = u1.id
+      LEFT JOIN users u2 ON ur.reported_user_id = u2.id
+      WHERE 1=1
+    `;
+
+    if (timeFilter === 'daily') {
+      query += ` AND DATE(ur.created_at) = CURDATE()`;
+    } else if (timeFilter === 'weekly') {
+      query += ` AND ur.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    }
+
+    query += ` ORDER BY ur.created_at DESC`;
+
+    const [reports] = await pool.query(query);
+
+    res.json({
+      success: true,
+      reports: reports
+    });
+  } catch (error) {
+    console.error('Get all user reports error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

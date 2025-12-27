@@ -32,9 +32,14 @@ export const createHelpRequest = async (req: AuthenticatedRequest, res: Response
 export const getAllHelpRequests = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const [requests] = await pool.query(`
-      SELECT hr.*, u.name as resident_name, u.location as resident_location
+      SELECT 
+        hr.*, 
+        u.name as resident_name, 
+        u.location as resident_location,
+        h.name as helper_name
       FROM help_requests hr
       JOIN users u ON hr.resident_id = u.id
+      LEFT JOIN users h ON hr.helper_id = h.id
       ORDER BY hr.created_at DESC
     `);
 
