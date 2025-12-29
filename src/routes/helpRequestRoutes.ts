@@ -7,7 +7,8 @@ import {
   acceptHelpRequest,
   startRequest,
   completeRequest,
-  updateRequestStatus
+  updateRequestStatus,
+  declineHelpRequest
 } from '../controllers/helpRequestController';
 
 import { authenticateToken, authorizeRole } from '../middleware/auth';
@@ -63,6 +64,17 @@ router.put(
   authenticateToken,
   authorizeRole('Helper'),
   acceptHelpRequest
+);
+
+/**
+ * Helper declines a request
+ * Status: Accepted/In-progress → Pending (removes helper assignment)
+ */
+router.put(
+  '/:id/decline',
+  authenticateToken,
+  authorizeRole('Helper'),
+  declineHelpRequest
 );
 
 /**

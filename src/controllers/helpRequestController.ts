@@ -190,3 +190,38 @@ export const updateRequestStatus = async (req: AuthenticatedRequest, res: Respon
   }
   
 };
+
+export const declineHelpRequest = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const helper_id = req.user?.id;
+
+    // Check if request exists and is assigned to this helper
+    const [requests] = await pool.query(
+      'SELECT * FROM help_requests WHERE id = ? AND helper_id = ?',
+      [id, helper_id]
+    );
+
+    if (!Array.isArray(requests) || requests.length === 0) {
+      return res.status(404).json({ error: 'Request not found or not assigned to you' });
+    }
+
+    const request = requests[0] as any;
+
+    // Only allow declining if status is Accepted or In-progress
+    if (request.status !== 'Accepted' && request.status !== 'In-progress') {
+      return res.status(400).json({ error: 'Can only decline accepted or in-progress requests' });
+    }
+
+    // Reset request to Pending and remove helper assignment
+    await pool.query(
+      'UPDATE help_requests SET helper_id = NULL, status = ? WHERE id = ?',
+      ['Pending', id]
+    );
+
+    res.json({ message: 'Help request declined successfully. It is now available for other helpers.' });
+  } catch (error) {
+    console.error('Decline help request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
