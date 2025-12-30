@@ -68,8 +68,8 @@ export const getChatInfo = async (req: AuthenticatedRequest, res: Response) => {
 
     const request = requests[0] as any;
 
-    // Check if chat is allowed
-    if (request.status === 'Pending' || !request.helper_id) {
+    // Check if chat is allowed - must have a helper assigned (not just Pending)
+    if (!request.helper_id) {
       return res.status(400).json({ 
         error: 'Chat is only available after a helper accepts the request' 
       });
