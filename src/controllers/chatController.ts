@@ -34,7 +34,7 @@ export const getChatMessages = async (req: AuthenticatedRequest, res: Response) 
       senderId: msg.sender_id,
       senderRole: msg.sender_role,
       messageText: msg.message_text,
-      timestamp: msg.created_at,
+      timestamp: new Date(msg.created_at).toISOString(),
       senderName: msg.sender_name
     })) : [];
 
